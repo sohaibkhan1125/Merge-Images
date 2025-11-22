@@ -1,0 +1,21 @@
+[
+  {
+    "origin": [
+      "http://localhost:3000",
+      "http://localhost:3001", 
+      "http://127.0.0.1:3000",
+      "http://127.0.0.1:3001",
+      "https://merge-images-75174.web.app",
+      "https://merge-images-75174.firebaseapp.com"
+    ],
+    "method": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    "maxAgeSeconds": 3600,
+    "responseHeader": [
+      "Content-Type",
+      "Access-Control-Allow-Origin",
+      "Access-Control-Allow-Methods",
+      "Access-Control-Allow-Headers",
+      "Access-Control-Allow-Credentials"
+    ]
+  }
+]

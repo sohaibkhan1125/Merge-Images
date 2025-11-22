@@ -1,0 +1,13 @@
+/* Froala editor container tweaks to fit admin panel */
+.fr-box {
+	width: 100%;
+}
+
+.fr-wrapper {
+	min-height: 300px;
+}
+
+.main-container {
+	width: 100%;
+}
+

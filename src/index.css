@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Theme CSS variables controlled by ThemeProvider */
+:root {
+  --primary: #1d4ed8;
+  --accent: #7c3aed;
+  --button-from: #2563eb;
+  --button-to: #4f46e5;
+  --hero-text: #1e3a8a;
+  --text-main: #0f172a;
+}
+
+/* Utility classes mapping vars to Tailwind-like styles */
+.theme-hero-text { color: var(--hero-text); }
+.theme-primary-text { color: var(--primary); }
+.theme-main-text { color: var(--text-main); }
+.theme-button {
+  background-image: linear-gradient(to right, var(--button-from), var(--button-to));
+  color: #fff;
+}
+/* Icons and inputs */
+.theme-icon { color: var(--primary); }
+.theme-input-text { color: var(--text-main); }
+.theme-outline { color: var(--primary); border-color: var(--primary); }
+
+/* Line clamp utilities */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
