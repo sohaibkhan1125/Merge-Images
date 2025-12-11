@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, useMemo } from 'react';
+import { fetchContent, subscribeToContentChanges } from '../services/contentService';
 
 const ContentContext = createContext({ content: '' });
 
@@ -6,47 +7,26 @@ export function ContentProvider({ children }) {
   const [content, setContent] = useState('');
 
   useEffect(() => {
-    // Load content from localStorage on mount
-    const loadContent = () => {
+    // Load content from Supabase on mount
+    const loadContent = async () => {
       try {
-        const savedSettings = localStorage.getItem('admin_settings');
-        if (savedSettings) {
-          const data = JSON.parse(savedSettings);
-          setContent(data.content || '');
-        }
+        const fetchedContent = await fetchContent();
+        setContent(fetchedContent);
       } catch (error) {
-        console.warn('Error loading content:', error);
+        console.error('Error loading content from Supabase:', error);
       }
     };
 
     loadContent();
 
-    // Listen for custom event when content is updated
-    const handleSettingsUpdate = (event) => {
-      if (event.detail && event.detail.content !== undefined) {
-        setContent(event.detail.content || '');
-      }
-    };
+    // Subscribe to real-time content changes from Supabase
+    const subscription = subscribeToContentChanges((newContent) => {
+      setContent(newContent);
+    });
 
-    window.addEventListener('settingsUpdated', handleSettingsUpdate);
-
-    // Also listen for storage changes (in case of multiple tabs)
-    const handleStorageChange = (e) => {
-      if (e.key === 'admin_settings') {
-        try {
-          const data = JSON.parse(e.newValue || '{}');
-          setContent(data.content || '');
-        } catch (error) {
-          console.warn('Error parsing storage change:', error);
-        }
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-
+    // Cleanup subscription on unmount
     return () => {
-      window.removeEventListener('settingsUpdated', handleSettingsUpdate);
-      window.removeEventListener('storage', handleStorageChange);
+      subscription.unsubscribe();
     };
   }, []);
 
