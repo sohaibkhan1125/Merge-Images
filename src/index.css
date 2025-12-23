@@ -13,17 +13,32 @@
 }
 
 /* Utility classes mapping vars to Tailwind-like styles */
-.theme-hero-text { color: var(--hero-text); }
-.theme-primary-text { color: var(--primary); }
-.theme-main-text { color: var(--text-main); }
+.theme-hero-text {
+  color: var(--hero-text);
+}
+
+.theme-main-text {
+  color: var(--text-main);
+}
+
 .theme-button {
   background-image: linear-gradient(to right, var(--button-from), var(--button-to));
   color: #fff;
 }
+
 /* Icons and inputs */
-.theme-icon { color: var(--primary); }
-.theme-input-text { color: var(--text-main); }
-.theme-outline { color: var(--primary); border-color: var(--primary); }
+.theme-icon {
+  color: var(--primary);
+}
+
+.theme-input-text {
+  color: var(--text-main);
+}
+
+.theme-outline {
+  color: var(--primary);
+  border-color: var(--primary);
+}
 
 /* Line clamp utilities */
 .line-clamp-2 {

@@ -1,21 +1,21 @@
-import { 
-  collection, 
-  addDoc, 
-  updateDoc, 
-  deleteDoc, 
-  doc, 
-  getDocs, 
-  getDoc, 
-  query, 
-  orderBy, 
+import {
+  collection,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+  getDocs,
+  getDoc,
+  query,
+  orderBy,
   onSnapshot,
-  serverTimestamp 
+  serverTimestamp
 } from 'firebase/firestore';
-import { 
-  ref, 
-  uploadBytes, 
-  getDownloadURL, 
-  deleteObject 
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject
 } from 'firebase/storage';
 import imageCompression from 'browser-image-compression';
 import { db, storage } from '../firebase';
@@ -38,8 +38,6 @@ class BlogService {
   // Compress image to reduce file size
   async compressImage(file, maxSizeMB = 4.5) {
     try {
-      console.log('Original file size:', (file.size / 1024 / 1024).toFixed(2), 'MB');
-      
       const options = {
         maxSizeMB: maxSizeMB,
         maxWidthOrHeight: 1920,
@@ -50,10 +48,7 @@ class BlogService {
       };
 
       const compressedFile = await imageCompression(file, options);
-      
-      console.log('Compressed file size:', (compressedFile.size / 1024 / 1024).toFixed(2), 'MB');
-      console.log('Compression ratio:', ((file.size - compressedFile.size) / file.size * 100).toFixed(1), '%');
-      
+
       return compressedFile;
     } catch (error) {
       console.error('Error compressing image:', error);
@@ -90,22 +85,19 @@ class BlogService {
 
       // Compress image if it's too large
       if (file.size > maxSize) {
-        console.log('File too large, compressing...');
         try {
           fileToUpload = await this.compressImage(file, 4.5); // Compress to 4.5MB to be safe
-          
+
           // If still too large after compression, try more aggressive compression
           if (fileToUpload.size > maxSize) {
-            console.log('Still too large, applying aggressive compression...');
             fileToUpload = await this.compressImage(file, 3.0); // Try 3MB
           }
-          
+
           // Final check - if still too large, throw user-friendly error
           if (fileToUpload.size > maxSize) {
             throw new Error('Thumbnail too large. Please upload an image under 5MB or try a different image.');
           }
         } catch (compressionError) {
-          console.error('Compression failed:', compressionError);
           throw new Error('Thumbnail too large. Please upload an image under 5MB or try a different image.');
         }
       }
@@ -115,31 +107,23 @@ class BlogService {
         const timestamp = Date.now();
         const fileName = `blog-thumbnails/${blogId}/${timestamp}-${fileToUpload.name}`;
         const storageRef = ref(storage, fileName);
-        
-        console.log('Uploading file to Firebase Storage:', fileName);
-        console.log('Final file size:', (fileToUpload.size / 1024 / 1024).toFixed(2), 'MB');
-        
+
         const snapshot = await uploadBytes(storageRef, fileToUpload);
         const downloadURL = await getDownloadURL(snapshot.ref);
-        
-        console.log('File uploaded successfully to Firebase Storage:', downloadURL);
+
         return { type: 'firebase', url: downloadURL };
       } catch (storageError) {
-        console.warn('Firebase Storage upload failed, falling back to base64:', storageError);
-        
         // Fallback to base64 storage
         try {
           const base64Data = await this.convertImageToBase64(fileToUpload);
-          console.log('Image converted to base64 for fallback storage');
           return { type: 'base64', url: base64Data };
         } catch (base64Error) {
-          console.error('Base64 conversion failed:', base64Error);
           throw new Error('Failed to process image. Please try a different image.');
         }
       }
     } catch (error) {
       console.error('Error uploading thumbnail:', error);
-      
+
       // Handle specific CORS errors
       if (error.message.includes('CORS') || error.message.includes('cors')) {
         console.warn('CORS error detected, attempting fallback to base64 storage');
@@ -150,7 +134,7 @@ class BlogService {
           throw new Error('CORS Error: Unable to upload image. Please try again or contact support.');
         }
       }
-      
+
       // Handle network errors
       if (error.code === 'storage/network-request-failed') {
         console.warn('Network error detected, attempting fallback to base64 storage');
@@ -161,12 +145,12 @@ class BlogService {
           throw new Error('Network error: Unable to upload image. Please check your connection and try again.');
         }
       }
-      
+
       // Handle quota exceeded
       if (error.code === 'storage/quota-exceeded') {
         throw new Error('Storage quota exceeded: Please contact administrator.');
       }
-      
+
       // Generic error
       throw new Error(error.message || 'Failed to upload thumbnail image');
     }
@@ -176,7 +160,7 @@ class BlogService {
   async deleteThumbnail(thumbnailURL) {
     try {
       if (!thumbnailURL) return;
-      
+
       // Extract the file path from the URL
       const url = new URL(thumbnailURL);
       const pathMatch = url.pathname.match(/\/o\/(.+)\?/);
@@ -195,10 +179,10 @@ class BlogService {
   async createBlogFallback(blogData) {
     try {
       const { title, description, content, thumbnailFile } = blogData;
-      
+
       // Generate slug
       const slug = this.generateSlug(title);
-      
+
       // Handle thumbnail for fallback
       let thumbnailData = null;
       if (thumbnailFile) {
@@ -231,7 +215,6 @@ class BlogService {
       existingBlogs.unshift(blogDoc);
       localStorage.setItem('fallback-blogs', JSON.stringify(existingBlogs));
 
-      console.log('Blog saved to localStorage fallback storage');
       return blogDoc;
     } catch (error) {
       console.error('Error in fallback storage:', error);
@@ -243,14 +226,14 @@ class BlogService {
   async createBlog(blogData) {
     try {
       const { title, description, content, thumbnailFile } = blogData;
-      
+
       if (!title || !content) {
         throw new Error('Title and content are required');
       }
 
       // Generate slug
       const slug = this.generateSlug(title);
-      
+
       // Check if slug already exists
       const existingBlog = await this.getBlogBySlug(slug);
       if (existingBlog) {
@@ -278,15 +261,15 @@ class BlogService {
       };
 
       const docRef = await addDoc(collection(db, this.collectionName), blogDoc);
-      
+
       // Update the thumbnail path with the actual document ID if using Firebase Storage
       if (thumbnailFile && thumbnailData?.type === 'firebase') {
         const newThumbnailData = await this.uploadThumbnail(thumbnailFile, docRef.id);
-        await updateDoc(docRef, { 
+        await updateDoc(docRef, {
           thumbnailURL: newThumbnailData.url,
-          thumbnailType: newThumbnailData.type 
+          thumbnailType: newThumbnailData.type
         });
-        
+
         // Delete the temporary thumbnail
         await this.deleteThumbnail(thumbnailData.url);
       }
@@ -294,7 +277,7 @@ class BlogService {
       return { id: docRef.id, ...blogDoc };
     } catch (error) {
       console.error('Error creating blog in Firestore, attempting fallback:', error);
-      
+
       // Try fallback storage
       try {
         return await this.createBlogFallback(blogData);
@@ -309,14 +292,14 @@ class BlogService {
   async updateBlog(blogId, blogData) {
     try {
       const { title, description, content, thumbnailFile, thumbnailURL } = blogData;
-      
+
       if (!title || !content) {
         throw new Error('Title and content are required');
       }
 
       const blogRef = doc(db, this.collectionName, blogId);
       const blogDoc = await getDoc(blogRef);
-      
+
       if (!blogDoc.exists()) {
         throw new Error('Blog post not found');
       }
@@ -331,7 +314,7 @@ class BlogService {
         if (currentData.thumbnailURL && currentData.thumbnailType === 'firebase') {
           await this.deleteThumbnail(currentData.thumbnailURL);
         }
-        
+
         // Upload new thumbnail
         thumbnailData = await this.uploadThumbnail(thumbnailFile, blogId);
       }
@@ -340,7 +323,7 @@ class BlogService {
       let slug = currentData.slug;
       if (title !== currentData.title) {
         slug = this.generateSlug(title);
-        
+
         // Check if new slug already exists
         const existingBlog = await this.getBlogBySlug(slug);
         if (existingBlog && existingBlog.id !== blogId) {
@@ -360,7 +343,7 @@ class BlogService {
       };
 
       await updateDoc(blogRef, updateData);
-      
+
       return { id: blogId, ...updateData };
     } catch (error) {
       console.error('Error updating blog:', error);
@@ -373,21 +356,21 @@ class BlogService {
     try {
       const blogRef = doc(db, this.collectionName, blogId);
       const blogDoc = await getDoc(blogRef);
-      
+
       if (!blogDoc.exists()) {
         throw new Error('Blog post not found');
       }
 
       const blogData = blogDoc.data();
-      
+
       // Delete thumbnail from storage
       if (blogData.thumbnailURL) {
         await this.deleteThumbnail(blogData.thumbnailURL);
       }
-      
+
       // Delete document from Firestore
       await deleteDoc(blogRef);
-      
+
       return true;
     } catch (error) {
       console.error('Error deleting blog:', error);
@@ -401,12 +384,12 @@ class BlogService {
       const blogsRef = collection(db, this.collectionName);
       const q = query(blogsRef, orderBy('createdAt', 'desc'));
       const querySnapshot = await getDocs(q);
-      
+
       const blogs = [];
       querySnapshot.forEach((doc) => {
         blogs.push({ id: doc.id, ...doc.data() });
       });
-      
+
       // Add fallback blogs from localStorage
       try {
         const fallbackBlogs = JSON.parse(localStorage.getItem('fallback-blogs') || '[]');
@@ -414,18 +397,18 @@ class BlogService {
       } catch (error) {
         console.warn('Error loading fallback blogs:', error);
       }
-      
+
       // Sort by creation date
       blogs.sort((a, b) => {
         const dateA = a.createdAt?.toDate?.() || new Date(a.createdAt);
         const dateB = b.createdAt?.toDate?.() || new Date(b.createdAt);
         return dateB - dateA;
       });
-      
+
       return blogs;
     } catch (error) {
       console.error('Error getting blogs from Firestore, trying fallback:', error);
-      
+
       // Fallback to localStorage only
       try {
         const fallbackBlogs = JSON.parse(localStorage.getItem('fallback-blogs') || '[]');
@@ -442,11 +425,11 @@ class BlogService {
     try {
       const blogRef = doc(db, this.collectionName, blogId);
       const blogDoc = await getDoc(blogRef);
-      
+
       if (!blogDoc.exists()) {
         return null;
       }
-      
+
       return { id: blogDoc.id, ...blogDoc.data() };
     } catch (error) {
       console.error('Error getting blog by ID:', error);
@@ -470,13 +453,13 @@ class BlogService {
     try {
       const blogsRef = collection(db, this.collectionName);
       const q = query(blogsRef, orderBy('createdAt', 'desc'));
-      
+
       return onSnapshot(q, (querySnapshot) => {
         const blogs = [];
         querySnapshot.forEach((doc) => {
           blogs.push({ id: doc.id, ...doc.data() });
         });
-        
+
         // Add fallback blogs from localStorage
         try {
           const fallbackBlogs = JSON.parse(localStorage.getItem('fallback-blogs') || '[]');
@@ -484,19 +467,19 @@ class BlogService {
         } catch (error) {
           console.warn('Error loading fallback blogs:', error);
         }
-        
+
         // Sort by creation date
         blogs.sort((a, b) => {
           const dateA = a.createdAt?.toDate?.() || new Date(a.createdAt);
           const dateB = b.createdAt?.toDate?.() || new Date(b.createdAt);
           return dateB - dateA;
         });
-        
+
         callback(blogs);
       });
     } catch (error) {
       console.error('Error subscribing to blogs, using fallback:', error);
-      
+
       // Fallback to localStorage only
       try {
         const fallbackBlogs = JSON.parse(localStorage.getItem('fallback-blogs') || '[]');
@@ -513,7 +496,7 @@ class BlogService {
   subscribeToBlog(blogId, callback) {
     try {
       const blogRef = doc(db, this.collectionName, blogId);
-      
+
       return onSnapshot(blogRef, (doc) => {
         if (doc.exists()) {
           callback({ id: doc.id, ...doc.data() });

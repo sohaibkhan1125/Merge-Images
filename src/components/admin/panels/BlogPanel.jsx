@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Editor } from '@tinymce/tinymce-react';
+import { useState, useEffect, useRef } from 'react';
+import QuillEditor from './QuillEditor';
 import { FileText, Upload, Save, Trash2, Eye, Edit3, AlertTriangle, Loader2 } from 'lucide-react';
 import blogService from '../../../services/blogService';
 
@@ -19,6 +19,7 @@ function BlogPanel() {
   const [loading, setLoading] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [compressing, setCompressing] = useState(false);
+  const quillEditorKey = useRef(0);
 
   // Load blogs from Firebase on component mount
   useEffect(() => {
@@ -70,10 +71,10 @@ function BlogPanel() {
 
       const reader = new FileReader();
       reader.onload = (e) => {
-        setFormData(prev => ({ 
-          ...prev, 
+        setFormData(prev => ({
+          ...prev,
           thumbnail: file,
-          thumbnailUrl: e.target.result 
+          thumbnailUrl: e.target.result
         }));
         setCompressing(false);
       };
@@ -83,12 +84,12 @@ function BlogPanel() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!formData.title.trim()) {
       showToast('Blog title is required', 'error');
       return;
     }
-    
+
     if (!formData.content.trim()) {
       showToast('Blog content is required', 'error');
       return;
@@ -124,6 +125,7 @@ function BlogPanel() {
       setIsEditing(false);
       setEditingBlog(null);
       setPreviewMode(false);
+      quillEditorKey.current += 1; // Force re-render Quill editor
     } catch (error) {
       console.error('Error saving blog:', error);
       showToast(error.message || 'Failed to save blog post', 'error');
@@ -143,6 +145,7 @@ function BlogPanel() {
     });
     setIsEditing(true);
     setPreviewMode(false);
+    quillEditorKey.current += 1; // Force re-render Quill editor with new content
   };
 
   const handleDelete = async (blogId) => {
@@ -171,6 +174,7 @@ function BlogPanel() {
     setIsEditing(false);
     setEditingBlog(null);
     setPreviewMode(false);
+    quillEditorKey.current += 1; // Force re-render Quill editor
   };
 
   const handleClearOldBlogs = async () => {
@@ -180,12 +184,12 @@ function BlogPanel() {
         const recentBlogs = blogs
           .sort((a, b) => new Date(b.createdAt?.toDate?.() || b.createdAt) - new Date(a.createdAt?.toDate?.() || a.createdAt))
           .slice(0, 10);
-        
+
         // Delete old blogs
         const deletePromises = blogs
           .filter(blog => !recentBlogs.find(recent => recent.id === blog.id))
           .map(blog => blogService.deleteBlog(blog.id));
-        
+
         await Promise.all(deletePromises);
         showToast('Old blog posts cleared successfully!');
       } catch (error) {
@@ -197,6 +201,11 @@ function BlogPanel() {
     }
   };
 
+  const handleQuillSave = async (content) => {
+    setFormData(prev => ({ ...prev, content }));
+    return true;
+  };
+
   return (
     <div className="p-6">
       <div className="mb-6">
@@ -206,9 +215,8 @@ function BlogPanel() {
 
       {/* Toast Notification */}
       {toast.show && (
-        <div className={`fixed top-4 right-4 z-50 px-4 py-2 rounded-lg shadow-lg ${
-          toast.type === 'error' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'
-        }`}>
+        <div className={`fixed top-4 right-4 z-50 px-4 py-2 rounded-lg shadow-lg ${toast.type === 'error' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'
+          }`}>
           {toast.message}
         </div>
       )}
@@ -280,11 +288,10 @@ function BlogPanel() {
                   />
                   <label
                     htmlFor="thumbnail-upload"
-                    className={`flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg transition-colors ${
-                      compressing 
-                        ? 'bg-gray-100 cursor-not-allowed text-gray-500' 
+                    className={`flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg transition-colors ${compressing
+                        ? 'bg-gray-100 cursor-not-allowed text-gray-500'
                         : 'hover:bg-gray-50 cursor-pointer'
-                    }`}
+                      }`}
                   >
                     {compressing ? (
                       <>
@@ -341,7 +348,7 @@ function BlogPanel() {
                   <div className="border border-gray-200 rounded-lg p-6 bg-gray-50">
                     <h4 className="text-lg font-semibold text-gray-900 mb-4">Content Preview</h4>
                     {formData.content ? (
-                      <div 
+                      <div
                         className="prose max-w-none"
                         dangerouslySetInnerHTML={{ __html: formData.content }}
                       />
@@ -356,37 +363,11 @@ function BlogPanel() {
                     )}
                   </div>
                 ) : (
-                  <div className="w-full mt-4 rounded-lg border bg-white p-2">
-                    <Editor
-                      apiKey='f08kw0ml5k8dqbktq0eeba9walbjg5fs9vwobqtcgwzcant5'
-                      value={formData.content}
-                      onEditorChange={handleContentChange}
-                      init={{
-                        height: 500,
-                        menubar: true,
-                        width: '100%',
-                        plugins: [
-                          'anchor', 'autolink', 'charmap', 'codesample', 'emoticons', 'link', 'lists', 'media', 'searchreplace', 'table', 'visualblocks', 'wordcount',
-                          'checklist', 'mediaembed', 'casechange', 'formatpainter', 'pageembed', 'a11ychecker', 'tinymcespellchecker',
-                          'permanentpen', 'powerpaste', 'advtable', 'advcode', 'advtemplate', 'ai', 'uploadcare', 'mentions',
-                          'tinycomments', 'tableofcontents', 'footnotes', 'mergetags', 'autocorrect', 'typography', 'inlinecss',
-                          'markdown', 'importword', 'exportword', 'exportpdf'
-                        ],
-                        toolbar:
-                          'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography uploadcare | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
-                        tinycomments_mode: 'embedded',
-                        tinycomments_author: 'Author name',
-                        mergetags_list: [
-                          { value: 'First.Name', title: 'First Name' },
-                          { value: 'Email', title: 'Email' },
-                        ],
-                        ai_request: (request, respondWith) =>
-                          respondWith.string(() =>
-                            Promise.reject('See docs to implement AI Assistant')
-                          ),
-                        uploadcare_public_key: '194afd35149e4476304d',
-                      }}
-                      initialValue="Start writing your blog post..."
+                  <div className="w-full mt-4 rounded-lg border bg-white">
+                    <QuillEditor
+                      key={quillEditorKey.current}
+                      initialContent={formData.content}
+                      onSave={handleQuillSave}
                     />
                   </div>
                 )}
@@ -436,7 +417,7 @@ function BlogPanel() {
 
           <div className="bg-white rounded-lg border border-gray-200 p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Published Blogs</h3>
-            
+
             {blogs.length === 0 ? (
               <div className="text-center py-8">
                 <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />

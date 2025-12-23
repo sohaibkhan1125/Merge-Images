@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useBranding } from "../context/BrandingContext";
 import { Menu, X, ChevronDown } from "lucide-react";
 
@@ -33,7 +33,7 @@ function Logo({ className = "h-8 w-8" }) {
   );
 }
 
-export default function Header({ setConversionType }) {
+function Header({ setConversionType }) {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { title, logoUrl } = useBranding();
@@ -59,11 +59,10 @@ export default function Header({ setConversionType }) {
 
   return (
     <header
-      className={`fixed top-0 inset-x-0 z-50 transition-all ${
-        scrolled
+      className={`fixed top-0 inset-x-0 z-50 transition-all ${scrolled
           ? "backdrop-blur-xl bg-white/70 ring-1 ring-black/5 shadow-sm"
           : "backdrop-blur-sm bg-white/40"
-      }`}
+        }`}
     >
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex h-16 items-center justify-between">
@@ -113,9 +112,8 @@ export default function Header({ setConversionType }) {
 
       {/* Mobile Menu */}
       <div
-        className={`md:hidden overflow-hidden transition-[max-height] duration-300 ${
-          isOpen ? "max-h-80" : "max-h-0"
-        }`}
+        className={`md:hidden overflow-hidden transition-[max-height] duration-300 ${isOpen ? "max-h-80" : "max-h-0"
+          }`}
       >
         <nav className="bg-white/80 backdrop-blur-xl ring-1 ring-black/5 shadow-sm px-6 pb-4 pt-2 space-y-2">
           {menuItems.map((item, i) => (
@@ -138,3 +136,5 @@ export default function Header({ setConversionType }) {
     </header>
   );
 }
+
+export default React.memo(Header);

@@ -4,6 +4,22 @@ import 'quill/dist/quill.snow.css';
 import Prism from 'prismjs';
 import 'prismjs/themes/prism-tomorrow.min.css';
 import './QuillEditor.css';
+import {
+    PenTool,
+    Code,
+    Sun,
+    Moon,
+    Minimize,
+    Maximize,
+    Trash2,
+    Save,
+    FileCode,
+    Copy,
+    Download,
+    X,
+    CheckCircle,
+    AlertCircle
+} from 'lucide-react';
 
 const QuillEditor = ({ initialContent, onSave }) => {
     const editorRef = useRef(null);
@@ -16,18 +32,6 @@ const QuillEditor = ({ initialContent, onSave }) => {
     const [showCodeModal, setShowCodeModal] = useState(false);
     const [codeOutput, setCodeOutput] = useState('');
     const [toastMessage, setToastMessage] = useState({ show: false, message: '', type: 'success' });
-
-    // Inject Font Awesome
-    useEffect(() => {
-        const link = document.createElement('link');
-        link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css';
-        link.rel = 'stylesheet';
-        document.head.appendChild(link);
-        return () => {
-            // Optional: remove on unmount, but often better to leave it if other components might use it
-            // document.head.removeChild(link);
-        };
-    }, []);
 
     // Load Theme Preference and Font Config
     useEffect(() => {
@@ -95,9 +99,6 @@ const QuillEditor = ({ initialContent, onSave }) => {
 
         // Load initial content
         if (initialContent) {
-            // We only set it if the editor is empty to avoid overwriting user progress if they were typing (unlikely on mount but good practice)
-            // But here it's likely first load.
-            // However, if initialContent updates, do we update? Usually separate effect.
             quillInstance.clipboard.dangerouslyPasteHTML(initialContent);
         }
 
@@ -108,17 +109,6 @@ const QuillEditor = ({ initialContent, onSave }) => {
         updateStats();
 
     }, []); // Run once on mount
-
-    // Update content when initialContent changes (optional, but requested content loading logic)
-    useEffect(() => {
-        if (quillRef.current && initialContent && quillRef.current.root.innerHTML !== initialContent) {
-            // Check if it's vastly different or just minor? 
-            // Simplest: only set if empty? Or if force loaded.
-            // For now, let's assume initialContent is the source of truth only on load or reset.
-            // We won't auto-update to avoid cursor jumps.
-        }
-    }, [initialContent]);
-
 
     const updateStats = () => {
         if (!quillRef.current) return;
@@ -161,7 +151,7 @@ const QuillEditor = ({ initialContent, onSave }) => {
             const success = await onSave(content);
             const now = new Date();
             const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            if (success !== false) { // Assuming onSave returns success boolean or promise resolving to it
+            if (success !== false) {
                 setLastSaved(`Saved at ${timeString}`);
                 showToast('Document saved successfully');
             } else {
@@ -245,25 +235,25 @@ const QuillEditor = ({ initialContent, onSave }) => {
             {/* Header */}
             <header className="editor-header">
                 <div className="logo">
-                    <i className="fas fa-pen-nib"></i>
+                    <PenTool size={20} />
                     Professional Editor
                 </div>
                 <div className="header-controls">
                     <button className="btn btn-primary" onClick={convertToCode}>
-                        <i className="fas fa-code"></i> Convert Text to Code
+                        <Code size={16} /> Convert Text to Code
                     </button>
                     <div style={{ width: '1px', height: '24px', background: 'var(--border-color)', margin: '0 5px' }}></div>
                     <button className="btn btn-icon" onClick={toggleTheme} title="Toggle Dark Mode">
-                        <i className={`fas ${theme === 'dark' ? 'fa-sun' : 'fa-moon'}`}></i>
+                        {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
                     </button>
                     <button className="btn btn-icon" onClick={toggleFullscreen} title="Fullscreen">
-                        <i className={`fas ${isFullscreen ? 'fa-compress' : 'fa-expand'}`}></i>
+                        {isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
                     </button>
                     <button className="btn btn-icon" onClick={handleClear} title="Clear All">
-                        <i className="fas fa-trash-alt"></i>
+                        <Trash2 size={18} />
                     </button>
                     <button className="btn" onClick={handleSave} title="Save Content">
-                        <i className="fas fa-save"></i> Save
+                        <Save size={18} /> Save
                     </button>
                 </div>
             </header>
@@ -291,16 +281,16 @@ const QuillEditor = ({ initialContent, onSave }) => {
                 }}>
                     <div className="modal-content">
                         <div className="modal-header">
-                            <h3><i className="fas fa-file-code"></i> Generated HTML Code</h3>
+                            <h3><FileCode size={20} style={{ verticalAlign: 'middle', marginRight: '8px' }} /> Generated HTML Code</h3>
                             <div style={{ display: 'flex', gap: '10px' }}>
                                 <button className="btn" onClick={copyCode}>
-                                    <i className="fas fa-copy"></i> Copy HTML
+                                    <Copy size={16} /> Copy HTML
                                 </button>
                                 <button className="btn" onClick={downloadHtml}>
-                                    <i className="fas fa-download"></i> Download .html
+                                    <Download size={16} /> Download .html
                                 </button>
                                 <button className="btn btn-icon" onClick={() => setShowCodeModal(false)}>
-                                    <i className="fas fa-times"></i>
+                                    <X size={18} />
                                 </button>
                             </div>
                         </div>
@@ -317,7 +307,7 @@ const QuillEditor = ({ initialContent, onSave }) => {
             <div className={`toast ${toastMessage.show ? 'show' : ''}`} style={{
                 borderLeftColor: toastMessage.type === 'error' ? 'var(--error-color)' : 'var(--primary-color)'
             }}>
-                <i className={`fas ${toastMessage.type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'}`}></i>
+                {toastMessage.type === 'error' ? <AlertCircle size={18} /> : <CheckCircle size={18} />}
                 <span>{toastMessage.message}</span>
             </div>
 

@@ -1,15 +1,26 @@
-import './App.css';
-import MainPage from './components/Main';
-import About from './components/About';
-import Contact from './components/Contact';
-import Privacy from './components/Privacy';
-import Terms from './components/Terms';
-import Blog from './components/Blog';
-import BlogPost from './components/BlogPost';
-import { useEffect, useMemo, useState } from 'react';
-import AdminApp from './components/admin/AdminApp';
+import { useEffect, useMemo, useState, lazy, Suspense } from 'react';
 import { useMaintenance } from './context/MaintenanceContext';
 import MaintenanceScreen from './components/MaintenanceScreen';
+import MainPage from './components/Main';
+
+// Lazy load other page components for better code splitting
+const About = lazy(() => import('./components/About'));
+const Contact = lazy(() => import('./components/Contact'));
+const Privacy = lazy(() => import('./components/Privacy'));
+const Terms = lazy(() => import('./components/Terms'));
+const Blog = lazy(() => import('./components/Blog'));
+const BlogPost = lazy(() => import('./components/BlogPost'));
+const AdminApp = lazy(() => import('./components/admin/AdminApp'));
+
+// Loading fallback component
+const PageLoader = () => (
+  <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-100">
+    <div className="text-center">
+      <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+      <p className="text-gray-600">Loading...</p>
+    </div>
+  </div>
+);
 
 function App() {
   const [path, setPath] = useState(window.location.pathname);
@@ -35,23 +46,25 @@ function App() {
 
   return (
     <div className="App">
-      {enabled && route !== 'admin' ? (
-        <MaintenanceScreen />
-      ) : route === 'admin'
-        ? <AdminApp />
-        : route === 'about'
-        ? <About />
-        : route === 'contact'
-        ? <Contact />
-        : route === 'privacy'
-        ? <Privacy />
-        : route === 'terms'
-        ? <Terms />
-        : route === 'blog'
-        ? <Blog />
-        : route === 'blogpost'
-        ? <BlogPost />
-        : <MainPage />}
+      <Suspense fallback={<PageLoader />}>
+        {enabled && route !== 'admin' ? (
+          <MaintenanceScreen />
+        ) : route === 'admin'
+          ? <AdminApp />
+          : route === 'about'
+            ? <About />
+            : route === 'contact'
+              ? <Contact />
+              : route === 'privacy'
+                ? <Privacy />
+                : route === 'terms'
+                  ? <Terms />
+                  : route === 'blog'
+                    ? <Blog />
+                    : route === 'blogpost'
+                      ? <BlogPost />
+                      : <MainPage />}
+      </Suspense>
     </div>
   );
 }

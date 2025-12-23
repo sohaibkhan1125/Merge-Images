@@ -21,7 +21,7 @@ function BlogPost() {
   useEffect(() => {
     const path = window.location.pathname;
     const slug = path.split('/blog/')[1];
-    
+
     if (!slug) {
       setNotFound(true);
       setLoading(false);
@@ -31,7 +31,7 @@ function BlogPost() {
     const loadBlog = async () => {
       try {
         const foundBlog = await blogService.getBlogBySlug(slug);
-        
+
         if (foundBlog) {
           setBlog(foundBlog);
         } else {
@@ -57,7 +57,7 @@ function BlogPost() {
           url: window.location.href,
         });
       } catch (err) {
-        console.log('Error sharing:', err);
+        // Silently fail share or use native fallback
       }
     } else {
       // Fallback: copy to clipboard
@@ -82,7 +82,7 @@ function BlogPost() {
       <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-100">
         <Header />
         <div aria-hidden="true" className="h-20 md:h-24" />
-        
+
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <h1 className="text-4xl font-bold text-gray-900 mb-4">Blog Post Not Found</h1>
@@ -96,7 +96,7 @@ function BlogPost() {
             </button>
           </div>
         </div>
-        
+
         <Footer />
       </div>
     );
@@ -105,7 +105,7 @@ function BlogPost() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-100">
       <Header />
-      
+
       {/* Spacer to offset fixed header */}
       <div aria-hidden="true" className="h-20 md:h-24" />
 
@@ -141,7 +141,7 @@ function BlogPost() {
                 <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 leading-tight">
                   {blog.title}
                 </h1>
-                
+
                 {blog.description && (
                   <p className="text-xl text-gray-600 mb-6 leading-relaxed">
                     {blog.description}
@@ -152,10 +152,10 @@ function BlogPost() {
                   <div className="flex items-center gap-4 text-sm text-gray-500">
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4" />
-                      <span>{new Date(blog.createdAt?.toDate?.() || blog.createdAt).toLocaleDateString('en-US', { 
-                        year: 'numeric', 
-                        month: 'long', 
-                        day: 'numeric' 
+                      <span>{new Date(blog.createdAt?.toDate?.() || blog.createdAt).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
                       })}</span>
                     </div>
                     {blog.updatedAt && blog.updatedAt !== blog.createdAt && (
@@ -164,7 +164,7 @@ function BlogPost() {
                       </div>
                     )}
                   </div>
-                  
+
                   <button
                     onClick={handleShare}
                     className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"

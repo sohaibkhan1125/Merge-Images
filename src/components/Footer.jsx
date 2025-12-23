@@ -39,7 +39,7 @@ const navigate = (e, to) => {
   }
 };
 
-const Footer = () => {
+function Footer() {
   const { title, logoUrl } = useBranding();
   const { socials } = useFooterSettings();
   return (
@@ -109,10 +109,10 @@ const Footer = () => {
                   return (
                     <a key={it.id} href={url} target="_blank" rel="noreferrer" className={common}>
                       {icon === 'facebook' ? <Facebook size={18} /> :
-                       icon === 'twitter' ? <Twitter size={18} /> :
-                       icon === 'instagram' ? <Instagram size={18} /> :
-                       icon === 'github' ? <Github size={18} /> :
-                       <Mail size={18} />}
+                        icon === 'twitter' ? <Twitter size={18} /> :
+                          icon === 'instagram' ? <Instagram size={18} /> :
+                            icon === 'github' ? <Github size={18} /> :
+                              <Mail size={18} />}
                     </a>
                   );
                 })}
@@ -134,6 +134,6 @@ const Footer = () => {
       </div>
     </footer>
   );
-};
+}
 
-export default Footer;
+export default React.memo(Footer);

@@ -11,7 +11,6 @@ import Footer from "./Footer";
 import { useHomepageContent } from "../context/HomepageContentContext";
 import { useHeroSection } from "../context/HeroSectionContext";
 import { useContent } from "../context/ContentContext";
-import jsPDF from "jspdf";
 
 const MainPage = () => {
   const { html } = useHomepageContent();
@@ -128,8 +127,8 @@ const MainPage = () => {
       format === "png"
         ? "image/png"
         : format === "jpeg" || format === "jpg"
-        ? "image/jpeg"
-        : "image/png";
+          ? "image/jpeg"
+          : "image/png";
 
     const mergedDataUrl = canvas.toDataURL(mimeType);
     setMergedImage(mergedDataUrl);
@@ -141,9 +140,12 @@ const MainPage = () => {
     }, 400);
   };
 
-  const downloadImage = () => {
+  const downloadImage = async () => {
     if (!mergedImage) return;
     if (format === "pdf") {
+      // Dynamically import jsPDF only when needed
+      const { default: jsPDF } = await import("jspdf");
+
       // Create a single-page PDF that fits the image on the page while preserving aspect ratio
       const pdf = new jsPDF({ unit: "pt", format: "a4" });
       const pageWidth = pdf.internal.pageSize.getWidth();
@@ -253,9 +255,8 @@ const MainPage = () => {
           <div className="rounded-3xl bg-white/70 backdrop-blur-xl ring-1 ring-black/5 shadow-2xl p-6 md:p-8">
             {/* Upload Section */}
             <div
-              className={`transition-all duration-300 border-2 border-dashed rounded-2xl p-8 md:p-10 flex flex-col justify-center items-center text-center h-72 relative cursor-pointer ${
-                isDragging ? "border-indigo-400 bg-indigo-50/60" : "border-blue-300/70 bg-gradient-to-br from-white/80 to-white/60"
-              }`}
+              className={`transition-all duration-300 border-2 border-dashed rounded-2xl p-8 md:p-10 flex flex-col justify-center items-center text-center h-72 relative cursor-pointer ${isDragging ? "border-indigo-400 bg-indigo-50/60" : "border-blue-300/70 bg-gradient-to-br from-white/80 to-white/60"
+                }`}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
