@@ -3,6 +3,7 @@ import { Calendar, User, ArrowLeft, Share2, Loader2 } from 'lucide-react';
 import Header from './Header';
 import Footer from './Footer';
 import blogService from '../services/blogService';
+import SEO from './SEO';
 
 const navigate = (e, to) => {
   if (!to) return;
@@ -104,6 +105,13 @@ function BlogPost() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-100">
+      <SEO
+        title={blog.title}
+        description={blog.description}
+        canonical={`/blog/${blog.slug}`}
+        ogImage={blog.thumbnailUrl}
+        ogType="article"
+      />
       <Header />
 
       {/* Spacer to offset fixed header */}
@@ -113,13 +121,14 @@ function BlogPost() {
         <div className="mx-auto max-w-4xl">
           {/* Navigation */}
           <div className="mb-8">
-            <button
+            <a
+              href="/blog"
               onClick={(e) => navigate(e, '/blog')}
               className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 mb-6 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
               Back to Blog
-            </button>
+            </a>
           </div>
 
           {/* Article */}
@@ -189,12 +198,13 @@ function BlogPost() {
               <p className="text-gray-600 mb-6">
                 Check out more articles on our blog for more insights and updates.
               </p>
-              <button
+              <a
+                href="/blog"
                 onClick={(e) => navigate(e, '/blog')}
                 className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
               >
                 View All Posts
-              </button>
+              </a>
             </div>
           </div>
         </div>

@@ -60,14 +60,22 @@ function Header({ setConversionType }) {
   return (
     <header
       className={`fixed top-0 inset-x-0 z-50 transition-all ${scrolled
-          ? "backdrop-blur-xl bg-white/70 ring-1 ring-black/5 shadow-sm"
-          : "backdrop-blur-sm bg-white/40"
+        ? "backdrop-blur-xl bg-white/70 ring-1 ring-black/5 shadow-sm"
+        : "backdrop-blur-sm bg-white/40"
         }`}
     >
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center gap-2">
+          <a
+            href="/"
+            onClick={(e) => {
+              e.preventDefault();
+              window.history.pushState({}, "", "/");
+              window.dispatchEvent(new PopStateEvent("popstate"));
+            }}
+            className="flex items-center gap-2 hover:opacity-90 transition-opacity"
+          >
             {logoUrl ? (
               <img src={logoUrl} alt="Logo" className="h-8 w-8 rounded" />
             ) : (
@@ -76,7 +84,7 @@ function Header({ setConversionType }) {
             <h1 className="text-xl md:text-2xl font-extrabold tracking-tight theme-hero-text">
               {title || 'MergeImages'}
             </h1>
-          </div>
+          </a>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-1">

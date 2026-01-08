@@ -40,7 +40,7 @@ function Blog() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-100">
       <Header />
-      
+
       {/* Spacer to offset fixed header */}
       <div aria-hidden="true" className="h-20 md:h-24" />
 
@@ -48,13 +48,14 @@ function Blog() {
         <div className="mx-auto max-w-6xl">
           {/* Header */}
           <div className="mb-12 text-center">
-            <button
+            <a
+              href="/"
               onClick={(e) => navigate(e, '/')}
               className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 mb-6 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
               Back to Home
-            </button>
+            </a>
             <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 mb-4">
               Our Blog
             </h1>
@@ -75,9 +76,10 @@ function Blog() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {blogs.map((blog) => (
-                <article
+                <a
                   key={blog.id}
-                  className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group cursor-pointer"
+                  href={`/blog/${blog.slug}`}
+                  className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group cursor-pointer block"
                   onClick={(e) => navigate(e, `/blog/${blog.slug}`)}
                 >
                   {blog.thumbnailUrl && (
@@ -108,7 +110,7 @@ function Blog() {
                       </span>
                     </div>
                   </div>
-                </article>
+                </a>
               ))}
             </div>
           )}

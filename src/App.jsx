@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState, lazy, Suspense } from 'react';
+import { HelmetProvider } from 'react-helmet-async';
 import { useMaintenance } from './context/MaintenanceContext';
 import MaintenanceScreen from './components/MaintenanceScreen';
 import MainPage from './components/Main';
+import SEO from './components/SEO';
 
 // Lazy load other page components for better code splitting
 const About = lazy(() => import('./components/About'));
@@ -45,27 +47,42 @@ function App() {
   }, [path]);
 
   return (
-    <div className="App">
-      <Suspense fallback={<PageLoader />}>
-        {enabled && route !== 'admin' ? (
-          <MaintenanceScreen />
-        ) : route === 'admin'
-          ? <AdminApp />
-          : route === 'about'
-            ? <About />
-            : route === 'contact'
-              ? <Contact />
-              : route === 'privacy'
-                ? <Privacy />
-                : route === 'terms'
-                  ? <Terms />
-                  : route === 'blog'
-                    ? <Blog />
-                    : route === 'blogpost'
-                      ? <BlogPost />
-                      : <MainPage />}
-      </Suspense>
-    </div>
+    <HelmetProvider>
+      <div className="App">
+        <Suspense fallback={<PageLoader />}>
+          {route === 'home' && <SEO />}
+          {route === 'blog' && (
+            <SEO
+              title="Blog"
+              description="Read our latest articles about image editing, optimization, and more."
+              canonical="/blog"
+            />
+          )}
+          {route === 'about' && <SEO title="About Us" canonical="/about" />}
+          {route === 'contact' && <SEO title="Contact Us" canonical="/contact" />}
+          {route === 'privacy' && <SEO title="Privacy Policy" canonical="/privacy" />}
+          {route === 'terms' && <SEO title="Terms of Service" canonical="/terms" />}
+
+          {enabled && route !== 'admin' ? (
+            <MaintenanceScreen />
+          ) : route === 'admin'
+            ? <AdminApp />
+            : route === 'about'
+              ? <About />
+              : route === 'contact'
+                ? <Contact />
+                : route === 'privacy'
+                  ? <Privacy />
+                  : route === 'terms'
+                    ? <Terms />
+                    : route === 'blog'
+                      ? <Blog />
+                      : route === 'blogpost'
+                        ? <BlogPost />
+                        : <MainPage />}
+        </Suspense>
+      </div>
+    </HelmetProvider>
   );
 }
 
