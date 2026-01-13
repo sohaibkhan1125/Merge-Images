@@ -2,4 +2,4 @@
 User-agent: *
 Disallow:
 
-Sitemap: https://mergeimages.com/sitemap.xml
+Sitemap: https://jpgmerge.com/sitemap.xml
